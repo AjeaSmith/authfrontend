@@ -6,7 +6,7 @@
         <div class="right">
           <b-nav-item href="#" to="/login">Login</b-nav-item>
           <b-nav-item href="#" to="/">Register</b-nav-item>
-          <b-nav-item href="#" @click="logout()">Login Out</b-nav-item>
+          <b-nav-item href="#" @click="logout()" v-if="isLoggedin">Login Out</b-nav-item>
         </div>
       </b-navbar>
     </div>
@@ -16,6 +16,11 @@
 <script>
 export default {
   name: "App",
+  data() {
+    return {
+      isLoggedin: false
+    };
+  },
   methods: {
     logout() {
       localStorage.removeItem("token");

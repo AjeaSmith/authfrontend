@@ -36,7 +36,7 @@
 <script>
 import joi from "joi";
 import axios from "axios";
-const BASEURL = "https://vueauthapp.herokuapp.com/";
+const BASEURL = "https://vueauthapp.herokuapp.com";
 const schema = joi.object().keys({
   username: joi
     .string()
@@ -76,9 +76,10 @@ export default {
           password: this.user.password
         };
         axios
-          .post(`${BASEURL}api/auth/`, body)
+          .post(`${BASEURL}/api/auth/`, body)
           .then(resp => {
             if (resp.data) {
+              console.log(resp.data);
               localStorage.token = resp.data.token;
               this.$router.push("/homepage");
             }
