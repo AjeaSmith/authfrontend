@@ -8,6 +8,7 @@
         >
           <b-spinner variant="primary" label="Loading..." style="width: 4rem; height: 4rem;"></b-spinner>
         </div>
+        <!-- spinner ends here -->
         <div class="form-flex">
           <h3 class="mb-3">Register to Manage Notes</h3>
           <b-form class="border p-3 form-width">

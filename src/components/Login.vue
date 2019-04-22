@@ -1,7 +1,14 @@
 <template>
-  <b-container class="mt-2">
-    <b-row>
+  <b-container class="mt-2 container-height">
+    <b-row class="row-height">
       <b-col>
+        <div
+          v-if="isLoading"
+          class="d-flex justify-content-center align-item-center spinner-height"
+        >
+          <b-spinner variant="primary" label="Loading..." style="width: 4rem; height: 4rem;"></b-spinner>
+        </div>
+        <!-- spinner ends here -->
         <div class="form-flex">
           <h3 class="mb-3">Login</h3>
           <b-form class="border p-3 form-width">
@@ -55,11 +62,13 @@
 import { required, minLength, email } from "vuelidate/lib/validators";
 import axios from "axios";
 import { mapState, mapGetters } from "vuex";
+import { setInterval } from "timers";
 const BASEURL = "https://vueauthapp.herokuapp.com";
 export default {
   name: "Login",
   data() {
     return {
+      isLoading: false,
       errorMessage: "",
       email: "",
       password: "",
@@ -82,27 +91,33 @@ export default {
       this.$v.$touch();
       if (this.$v.$invalid) {
         return;
+      } else {
+        // submit to DB
+        this.submitData();
       }
-      // submit to DB
-      this.isLoading = true;
-      this.submitData();
     },
     submitData() {
       const body = {
         email: this.email,
         password: this.password
       };
+      this.isLoading = true;
       axios
         .post(`${BASEURL}/api/auth/login`, body)
         .then(result => {
           if (result.data) {
+            this.isLoading = false;
             localStorage.token = result.data.token;
             this.$router.push("/homepage");
           }
         })
         .catch(err => {
           if (err) {
+            this.isLoading = false;
             this.errorMessage = "Unable to login";
+            setInterval(() => {
+              this.errorMessage = "";
+            }, 4000);
           }
         });
     }
@@ -112,6 +127,16 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.container-height {
+  height: 100vh;
+}
+.row-height {
+  height: 100%;
+}
+.spinner-height {
+  height: 100%;
+  align-items: center;
+}
 .is-invalid {
   border: 1px solid red;
 }
