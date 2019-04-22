@@ -1,16 +1,22 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
-Vue.use(Vuex)
+import axios from 'axios'
+const BASEURL = "https://vueauthapp.herokuapp.com";
+Vue.use(Vuex, axios)
 
 export default new Vuex.Store({
   state: {
-
+    user: null,
+    isLoggedin: false,
+    isLoading: false,
+    notes: {
+      title: '',
+      desc: ''
+    }
   },
   mutations: {
-
+    
   },
   actions: {
-
   }
 })

@@ -1,18 +1,49 @@
 <template>
-  <b-container class="mt-2">
-    <b-row>
+  <b-container class="mt-2 container-height">
+    <b-row class="row-height">
       <b-col>
+        <div
+          v-if="isLoading"
+          class="d-flex justify-content-center align-item-center spinner-height"
+        >
+          <b-spinner variant="primary" label="Loading..." style="width: 4rem; height: 4rem;"></b-spinner>
+        </div>
         <div class="form-flex">
-          <h3 class="mb-3">Register to Manage Todos</h3>
+          <h3 class="mb-3">Register to Manage Notes</h3>
           <b-form class="border p-3 form-width">
-            <b-alert v-if="errorMessage" variant="danger" show>{{errorMessage}}</b-alert>
-            <b-form-group label="Name">
-              <b-form-input type="text" required placeholder="Your name" v-model="user.username"></b-form-input>
+            <b-alert v-if="dataError" variant="danger" show>{{dataError}}</b-alert>
+            <b-form-group label="Username">
+              <b-form-input
+                v-model="username"
+                placeholder="Enter name"
+                :class="{'is-invalid': submitted && $v.username.$error}"
+              ></b-form-input>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.username.required"
+              >Field is required</b-form-text>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.username.minLength"
+              >Must be 4 characters long</b-form-text>
             </b-form-group>
             <!-- Name field ends here -->
             <b-form-group label="Email">
-              <b-form-input type="email" required placeholder="Your email" v-model="user.email"></b-form-input>
-              <b-form-text>ex: example.gmail.com</b-form-text>
+              <b-form-input
+                type="email"
+                required
+                placeholder="Your email"
+                v-model="email"
+                :class="{'is-invalid': submitted && $v.email.$error}"
+              ></b-form-input>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.email.email"
+              >Must be a valid email</b-form-text>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.email.required"
+              >Field is required</b-form-text>
             </b-form-group>
             <!-- Email field ends here -->
             <b-form-group label="Password">
@@ -20,8 +51,17 @@
                 type="password"
                 required
                 placeholder="Your password"
-                v-model="user.password"
+                v-model="password"
+                :class="{'is-invalid': submitted && $v.password.$error}"
               ></b-form-input>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.password.required"
+              >Field is required</b-form-text>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.password.minLength"
+              >Password needs to be at least 8 characters long</b-form-text>
             </b-form-group>
             <b-form-group>
               <b-button block variant="success" @click="registerUser()">Register</b-button>
@@ -34,92 +74,89 @@
 </template>
 
 <script>
-import joi from "joi";
 import axios from "axios";
+import store from "../store";
+import { mapState, mapGetters } from "vuex";
 const BASEURL = "https://vueauthapp.herokuapp.com";
-const schema = joi.object().keys({
-  username: joi
-    .string()
-    .min(4)
-    .max(30)
-    .trim()
-    .required(),
-  email: joi
-    .string()
-    .email()
-    .required(),
-  password: joi
-    .string()
-    .trim()
-    .regex(/^[a-zA-Z0-9]{10,30}$/)
-});
+import { required, minLength, email } from "vuelidate/lib/validators";
+import { setInterval } from "timers";
 export default {
   name: "Register",
   data() {
     return {
-      errorMessage: "",
-      user: {
-        username: "",
-        email: "",
-        password: ""
-      }
+      dataError: "",
+      submitted: false,
+      username: "",
+      email: "",
+      password: "",
+      isLoading: false
     };
+  },
+  validations: {
+    username: {
+      required,
+      minLength: minLength(4)
+    },
+    email: {
+      required,
+      email
+    },
+    password: {
+      required,
+      minLength: minLength(8)
+    }
+  },
+  computed: {
+    ...mapState(["isLoggedin"])
   },
   methods: {
     registerUser() {
-      this.errorMessage = "";
-      if (this.validate()) {
-        // send data to server
-        const body = {
-          username: this.user.username,
-          email: this.user.email,
-          password: this.user.password
-        };
-        axios
-          .post(`${BASEURL}/api/auth/`, body)
-          .then(resp => {
-            if (resp.data) {
-              console.log(resp.data);
-              localStorage.token = resp.data.token;
-              this.$router.push("/homepage");
-            }
-          })
-          .catch(err => {
-            this.errorMessage = "User already exists";
-          });
+      this.submitted = true;
+      this.$v.$touch();
+      if (this.$v.$invalid) {
+        return;
       }
+      // submit to DB
+      this.isLoading = true;
+      this.submitData();
     },
-    validate() {
-      const result = joi.validate(this.user, schema);
-      if (result.error === null) {
-        return true;
-      }
-      if (result.error.message.includes("name")) {
-        this.errorMessage =
-          "Name must be longer than 4 characters & Cannot be empty";
-      }
-      if (result.error.message.includes("password")) {
-        this.errorMessage =
-          "Password cannot be empty, must be 6-8 characters long";
-      }
-      if (result.error.message.includes("email")) {
-        this.errorMessage = "Email cannot be empty & Must be a valid email";
-      }
-      return false;
-    }
-  },
-  watch: {
-    user: {
-      handler() {
-        this.errorMessage = "";
-      },
-      deep: true
+    submitData() {
+      const body = {
+        username: this.username,
+        email: this.email,
+        password: this.password
+      };
+      axios
+        .post(`${BASEURL}/api/auth`, body)
+        .then(result => {
+          localStorage.token = result.data.token;
+          this.$router.push("/homepage");
+          this.isLoggedin = true;
+        })
+        .catch(err => {
+          if (err) {
+            this.dataError = "User already exist";
+            setInterval(() => {
+              this.dataError = "";
+            }, 4000);
+          }
+        });
     }
   }
 };
 </script>
 
 <style scoped>
+.container-height {
+  height: 100vh;
+}
+.row-height {
+  height: 100%;
+}
+.spinner-height {
+  height: 100%;
+  align-items: center;
+}
 .is-invalid {
   border: 1px solid red;
 }

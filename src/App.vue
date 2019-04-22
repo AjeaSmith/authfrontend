@@ -14,18 +14,20 @@
   </div>
 </template>
 <script>
+import { mapState } from "vuex";
 export default {
   name: "App",
   data() {
-    return {
-      isLoggedin: false
-    };
+    return {};
   },
   methods: {
     logout() {
       localStorage.removeItem("token");
       this.$router.push("/login");
     }
+  },
+  computed: {
+    ...mapState(["isLoggedin"])
   }
 };
 </script>
