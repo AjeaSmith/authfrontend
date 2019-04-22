@@ -7,8 +7,21 @@
           <b-form class="border p-3 form-width">
             <b-alert v-if="errorMessage" variant="danger" show>{{errorMessage}}</b-alert>
             <b-form-group label="Email">
-              <b-form-input type="email" required placeholder="Your email" v-model="user.email"></b-form-input>
-              <b-form-text>ex: example.gmail.com</b-form-text>
+              <b-form-input
+                type="email"
+                required
+                placeholder="Your email"
+                v-model="email"
+                :class="{'is-invalid': submitted && $v.email.$error}"
+              ></b-form-input>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.email.email"
+              >Must be a valid email</b-form-text>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.email.required"
+              >Field is required</b-form-text>
             </b-form-group>
             <!-- Email field ends here -->
             <b-form-group label="Password">
@@ -16,8 +29,17 @@
                 type="password"
                 required
                 placeholder="Your password"
-                v-model="user.password"
+                v-model="password"
+                :class="{'is-invalid': submitted && $v.password.$error}"
               ></b-form-input>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.password.required"
+              >Field is required</b-form-text>
+              <b-form-text
+                text-variant="danger"
+                v-if="submitted && !$v.password.minLength"
+              >Password needs to be at least 8 characters long</b-form-text>
             </b-form-group>
             <b-form-group>
               <b-button block variant="success" @click="login()">Login</b-button>
@@ -30,70 +52,59 @@
 </template>
 
 <script>
-import Joi from "joi";
+import { required, minLength, email } from "vuelidate/lib/validators";
 import axios from "axios";
+import { mapState, mapGetters } from "vuex";
 const BASEURL = "https://vueauthapp.herokuapp.com";
-const schema = Joi.object().keys({
-  email: Joi.string()
-    .email()
-    .required(),
-  password: Joi.string()
-    .trim()
-    .regex(/^[a-zA-Z0-9]{10,30}$/)
-});
 export default {
   name: "Login",
   data() {
     return {
       errorMessage: "",
-      user: {
-        email: "",
-        password: ""
-      }
+      email: "",
+      password: "",
+      submitted: false
     };
+  },
+  validations: {
+    email: {
+      required,
+      email
+    },
+    password: {
+      required,
+      minLength: minLength(8)
+    }
   },
   methods: {
     login() {
-      this.errorMessage = "";
-      if (this.validUser()) {
-        // send data to server
-        const body = {
-          email: this.user.email,
-          password: this.user.password
-        };
-        axios
-          .post(`${BASEURL}/api/auth/login`, body)
-          .then(result => {
-            if (result.data) {
-              // store the token in localstorage
-              localStorage.token = result.data.token;
-              this.$router.push("/homepage");
-            }
-          })
-          .catch(err => {
-            this.errorMessage = "Unable to login";
-          });
+      this.submitted = true;
+      this.$v.$touch();
+      if (this.$v.$invalid) {
+        return;
       }
+      // submit to DB
+      this.isLoading = true;
+      this.submitData();
     },
-    validUser() {
-      const result = Joi.validate(this.user, schema);
-      if (result.error === null) {
-        return true;
-      }
-      if (result.error.message.includes("email")) {
-        this.errorMessage = "Must be a valid email";
-      } else if (result.error.message.includes("password")) {
-        this.errorMessage =
-          "Password cannot be empty, must be 6-8 characters long";
-      }
-    }
-  },
-  watch: {
-    user: {
-      handler() {
-        this.errorMessage = "";
-      },
-      deep: true
+    submitData() {
+      const body = {
+        email: this.email,
+        password: this.password
+      };
+      axios
+        .post(`${BASEURL}/api/auth/login`, body)
+        .then(result => {
+          if (result.data) {
+            localStorage.token = result.data.token;
+            this.$router.push("/homepage");
+          }
+        })
+        .catch(err => {
+          if (err) {
+            this.errorMessage = "Unable to login";
+          }
+        });
     }
   }
 };

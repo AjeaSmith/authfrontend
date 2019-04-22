@@ -4,9 +4,9 @@
       <b-navbar type="dark" variant="dark" class="navbar">
         <b-navbar-brand>Auth with JWT</b-navbar-brand>
         <div class="right">
-          <b-nav-item href="#" to="/login">Login</b-nav-item>
-          <b-nav-item href="#" to="/">Register</b-nav-item>
-          <b-nav-item href="#" @click="logout()" v-if="isLoggedin">Login Out</b-nav-item>
+          <b-nav-item href="#" to="/login" v-if="!isLoggedin">Login</b-nav-item>
+          <b-nav-item href="#" to="/" v-if="!isLoggedin">Register</b-nav-item>
+          <b-nav-item href="#" @click="logout()">Logout</b-nav-item>
         </div>
       </b-navbar>
     </div>
@@ -14,11 +14,13 @@
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 export default {
   name: "App",
   data() {
-    return {};
+    return {
+      isLoggedin: false
+    };
   },
   methods: {
     logout() {
@@ -27,7 +29,17 @@ export default {
     }
   },
   computed: {
-    ...mapState(["isLoggedin"])
+    isToken: {
+      get() {
+        return this.isLoggedin;
+      },
+      set(value) {
+        if (localStorage.token) {
+          this.isLoggedin = true;
+          console.log(this.isLoggedin);
+        }
+      }
+    }
   }
 };
 </script>

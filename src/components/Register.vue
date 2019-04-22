@@ -106,19 +106,15 @@ export default {
       minLength: minLength(8)
     }
   },
-  computed: {
-    ...mapState(["isLoggedin"])
-  },
   methods: {
     registerUser() {
       this.submitted = true;
       this.$v.$touch();
       if (this.$v.$invalid) {
         return;
+      } else {
+        this.submitData();
       }
-      // submit to DB
-      this.isLoading = true;
-      this.submitData();
     },
     submitData() {
       const body = {
@@ -126,15 +122,19 @@ export default {
         email: this.email,
         password: this.password
       };
+      this.isLoading = true;
       axios
         .post(`${BASEURL}/api/auth`, body)
         .then(result => {
-          localStorage.token = result.data.token;
-          this.$router.push("/homepage");
-          this.isLoggedin = true;
+          if (result) {
+            this.isLoading = false;
+            localStorage.token = result.data.token;
+            this.$router.push("/homepage");
+          }
         })
         .catch(err => {
           if (err) {
+            this.isLoading = false;
             this.dataError = "User already exist";
             setInterval(() => {
               this.dataError = "";

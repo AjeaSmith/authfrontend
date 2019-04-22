@@ -8,14 +8,13 @@ export default new Vuex.Store({
   state: {
     user: null,
     isLoggedin: false,
-    isLoading: false,
     notes: {
       title: '',
       desc: ''
     }
   },
   mutations: {
-    
+
   },
   actions: {
   }
