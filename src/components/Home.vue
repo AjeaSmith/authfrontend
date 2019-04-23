@@ -1,7 +1,7 @@
 <template>
   <b-container class="mt-3">
     <section>
-      <h2 v-for="name in user" :key="name._id">Welcome, {{user.user.username}}</h2>
+      <h2 v-for="name in users" :key="name._id">Welcome, {{name.username}}</h2>
       <b-form class="mt-5 mb-4" @submit.prevent="addNote()">
         <b-form-group label="Add Note:" label-for="note">
           <b-form-input
@@ -45,6 +45,7 @@
               align="center"
             >
               <b-card-text>{{note.description}}</b-card-text>
+              <b-button block variant="danger" size="sm" @click="deletenote(note._id)">Delete Note</b-button>
             </b-card>
           </b-col>
         </b-row>
@@ -60,13 +61,14 @@ export default {
   name: "Home",
   data() {
     return {
-      user: null,
+      users: [],
       note: {
         title: "",
         desc: "",
         id: null
       },
-      notes: []
+      notes: [],
+      boxTwo: ""
     };
   },
   created() {
@@ -79,8 +81,8 @@ export default {
       })
       .then(result => {
         if (result.data) {
-          this.user = result.data;
-          this.note.id = result.data.user._id;
+          this.users.push(result.data);
+          this.note.id = result.data._id;
         } else {
           // if token so happen to expire, remove token and redirect to login
           localStorage.removeItem("token");
@@ -106,7 +108,8 @@ export default {
           }
         })
         .then(response => {
-          console.log(response.data);
+          this.note.title = "";
+          this.note.desc = "";
           this.notes.push(response.data);
           this.newNote = {
             title: "",
@@ -128,6 +131,24 @@ export default {
         .then(response => {
           this.notes = response.data;
         });
+    },
+    deletenote(id) {
+      if (confirm("Are you sure you want to delete this note")) {
+        if (true) {
+          axios
+            .delete(`${BASEURL}/api/v1/notes/${id}`, {
+              headers: { authorization: `Bearer ${localStorage.token}` }
+            })
+            .then(() => {
+              this.getNotes();
+            })
+            .catch(err => {
+              if (err) {
+                console.log("not deleted", err);
+              }
+            });
+        }
+      }
     }
   }
 };
@@ -135,6 +156,6 @@ export default {
 
 <style>
 .width {
-  width: 400px;
+  width: 430px;
 }
 </style>

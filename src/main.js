@@ -4,8 +4,9 @@ import './plugins/axios'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import Vuelidate from 'vuelidate'
-Vue.use(Vuelidate)
+import Vuelidate from 'vuelidate';
+import VModal from 'vue-js-modal'
+Vue.use(Vuelidate, VModal)
 Vue.config.productionTip = false
 
 new Vue({
