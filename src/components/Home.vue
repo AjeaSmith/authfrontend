@@ -57,7 +57,6 @@
 </template>
 <script>
 import axios from "axios";
-import { mapState, mapGetters } from "vuex";
 const BASEURL = "https://vueauthapp.herokuapp.com";
 export default {
   name: "Home",

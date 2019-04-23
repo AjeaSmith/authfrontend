@@ -61,8 +61,6 @@
 <script>
 import { required, minLength, email } from "vuelidate/lib/validators";
 import axios from "axios";
-import { mapState, mapGetters } from "vuex";
-import { setInterval } from "timers";
 const BASEURL = "https://vueauthapp.herokuapp.com";
 export default {
   name: "Login",
