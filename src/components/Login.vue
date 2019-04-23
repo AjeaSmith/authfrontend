@@ -117,7 +117,7 @@ export default {
             this.errorMessage = "Unable to login";
             setInterval(() => {
               this.errorMessage = "";
-            }, 4000);
+            }, 5000);
           }
         });
     }

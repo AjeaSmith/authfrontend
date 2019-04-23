@@ -2,7 +2,7 @@
   <b-container class="mt-3">
     <section>
       <h2 v-for="name in users" :key="name._id">Welcome, {{name.username}}</h2>
-      <b-form class="mt-5 mb-4" @submit.prevent="addNote()">
+      <b-form class="mt-5 mb-4 section-width" @submit.prevent="addNote()">
         <b-form-group label="Add Note:" label-for="note">
           <b-form-input
             id="note"
@@ -26,13 +26,14 @@
         </b-form-group>
       </b-form>
       <p v-if="notes == 0">You have no notes, add some :)</p>
-      <b-card-group v-else>
+      <b-card-group v-else class="section-width">
         <b-row>
           <b-col
+            xs="12"
             sm="6"
             md="6"
-            lg="4"
-            xl="3"
+            lg="6"
+            xl="4"
             v-for="note in notes"
             :key="note._id"
             class="d-flex flex-row mb-3 flex-md-wrap justify-content width"
@@ -156,7 +157,10 @@ export default {
 </script>
 
 <style>
+.section-width {
+  max-width: 1000px;
+}
 .width {
-  width: 430px;
+  width: 400px;
 }
 </style>
