@@ -25,7 +25,8 @@
           <b-button block type="submit" variant="success">Add Note</b-button>
         </b-form-group>
       </b-form>
-      <b-card-group>
+      <p v-if="notes == 0">You have no notes, add some :)</p>
+      <b-card-group v-else>
         <b-row>
           <b-col
             sm="6"
